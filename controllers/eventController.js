@@ -1,4 +1,5 @@
 import eventModel from '../models/eventModel.js'
+import user from '../models/userModel.js'
 import fs from "fs";
 
 export const eventController = async (req, res) => {
@@ -61,7 +62,7 @@ export const eventController = async (req, res) => {
     }
   };
 
-//Obtener lugares
+//Obtener eventos
 export const getEventController = async (req, res) => {
     try {
         const event = await eventModel.find({})
@@ -84,4 +85,38 @@ export const getEventController = async (req, res) => {
           error,
         });
     }
+}
+
+//registrarse a un evento
+
+export const enrollUserEvent = async (req, res) => {
+ const userId = req.params.id
+ const eventId = req.query.id
+  try {
+    const user = await user.findById(userId);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    const event = await event.findById(eventId);
+    if(!event) {
+      return res.status(404).send({ message: "Event not found" });
+    }
+
+    if(event.attendees.includes(userId)) {
+      return res.status(400).send({ message: "The user is already registered in this event" });
+    }
+
+    if (usuario.age < event.minimumAge) {
+      return res.status(422).send({ message: "the user does not meet the minimum age for this event" });
+    }
+
+    event.attendees.push(userId)
+    await event.save()
+    return res.json({ success: true, message: 'successfully registered user' });
+
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+
+  }
 }
